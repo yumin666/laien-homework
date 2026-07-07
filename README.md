@@ -6,7 +6,11 @@ This assessment is based on a real iOS app listed on the Apple App Store:
 
 https://apps.apple.com/us/app/workout-for-women-home-gym/id839285684
 
-If `https://apps.apple.com/us/app/workout-for-women-lose-weight/id839285684` automatically redirects to `https://apps.apple.com/cn/iphone/today`, you may try visiting `https://apps.apple.com/cn/app/workout-for-women-lose-weight/id839285684` instead. This fallback is only for opening the app detail page; the review data used in this assessment must come from the U.S. storefront.
+If you have access to an overseas network environment, use the U.S. App Store link above. If not, and the U.S. link cannot be opened or redirects, use the China App Store link only to open the app detail page:
+
+https://apps.apple.com/cn/app/workout-for-women-home-gym/id839285684
+
+Regardless of which link is used to open the page, the review data used in this assessment must come from the U.S. App Store storefront.
 
 You are expected to complete a full product analysis workflow around this app's user reviews, covering data collection, review cleaning, review classification, issue analysis, version planning, PRD writing, and test case design. The final results should be presented through a runnable UI.
 
