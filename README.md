@@ -86,6 +86,26 @@ MYSQL_DATABASE=
 
 No database is required for local evaluation. If MySQL variables are empty, the server uses an in-memory store for analysis runs.
 
+## Deploying on Render
+
+This repository includes `render.yaml` for a Render web service.
+
+Deployment steps:
+
+1. Push this repository to GitHub.
+2. In Render, create a new Blueprint or Web Service from the GitHub repository.
+3. Use the included `render.yaml`, or configure:
+   - Build command: `npm install`
+   - Start command: `npm start`
+4. Add environment variables in Render:
+   - `DEEPSEEK_API_KEY`
+   - `DEEPSEEK_MODEL=deepseek-chat`
+   - `DEEPSEEK_BASE_URL=https://api.deepseek.com`
+   - `MAX_REVIEW_PAGES=5`
+5. Deploy the service and open the Render public URL.
+
+Do not put `DEEPSEEK_API_KEY` in source code or GitHub settings.
+
 ## Optional MySQL Persistence
 
 To persist runs, create the schema in `db/schema.sql`, then set:

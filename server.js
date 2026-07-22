@@ -7,6 +7,7 @@ const { createStore } = require("./src/db/store");
 loadDotEnv();
 
 const PORT = Number(process.env.PORT || 8080);
+const HOST = process.env.HOST || "0.0.0.0";
 const PUBLIC_DIR = path.join(__dirname, "public");
 const SAMPLE_FILE = path.join(__dirname, "sample-data", "workout-for-women-us-reviews.json");
 const MIME = {
@@ -86,8 +87,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`App Review Insights running at http://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`App Review Insights running at http://${HOST}:${PORT}`);
   console.log(`Storage: ${store.kind}`);
 });
 
