@@ -8,6 +8,7 @@ const {
   deterministicAnalysis,
   selectScope,
   sanitizeModelOutput,
+  collectAppleReviews,
   extractAppId,
   parseImportedReviews
 } = require("../src/analysis/pipeline");
@@ -21,6 +22,36 @@ async function main() {
   ];
 
   assert.strictEqual(extractAppId("https://apps.apple.com/us/app/foo/id839285684"), "839285684");
+
+  const originalFetch = global.fetch;
+  const fetchedUrls = [];
+  global.fetch = async (url) => {
+    fetchedUrls.push(url);
+    return {
+      ok: true,
+      async json() {
+        return {
+          feed: {
+            entry: [
+              {
+                id: { label: "live-1" },
+                title: { label: "Live review" },
+                content: { label: "This app is useful but the pricing is unclear." },
+                "im:rating": { label: "3" },
+                "im:version": { label: "1.0" },
+                author: { name: { label: "tester" } },
+                updated: { label: "2026-07-22T00:00:00Z" }
+              }
+            ]
+          }
+        };
+      }
+    };
+  };
+  const liveReviews = await collectAppleReviews("6448311069", 1);
+  global.fetch = originalFetch;
+  assert.strictEqual(liveReviews.length, 1);
+  assert.ok(fetchedUrls[0].includes("/rss/customerreviews/id=6448311069/sortby=mostrecent/json"));
 
   const cleaned = cleanReviews(reviews);
   assert.strictEqual(cleaned.length, 3);

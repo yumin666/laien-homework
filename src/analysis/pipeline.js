@@ -117,14 +117,18 @@ async function runAnalysis({ appUrl = DEFAULT_APP_URL, goal = "", importedReview
 async function collectAppleReviews(appId, pages) {
   const reviews = [];
   const maxPages = Math.max(1, Math.min(Number.isFinite(pages) ? pages : 5, 10));
-  for (let page = 1; page <= maxPages; page += 1) {
-    const endpoint = `https://itunes.apple.com/us/rss/customerreviews/page=${page}/id=${appId}/sortby=mostrecent/json`;
+  const endpoints = [
+    `https://itunes.apple.com/rss/customerreviews/id=${appId}/sortby=mostrecent/json`,
+    `https://itunes.apple.com/us/rss/customerreviews/id=${appId}/sortby=mostrecent/json`,
+    ...Array.from({ length: maxPages }, (_, index) => `https://itunes.apple.com/us/rss/customerreviews/page=${index + 1}/id=${appId}/sortby=mostrecent/json`)
+  ];
+  for (const endpoint of endpoints) {
     const response = await fetch(endpoint, { headers: { "User-Agent": "app-review-insights/1.0" } });
-    if (!response.ok) throw new Error(`Apple RSS request failed on page ${page}: HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`Apple RSS request failed: HTTP ${response.status}`);
     const data = await response.json();
-    const entries = Array.isArray(data.feed?.entry) ? data.feed.entry : [];
+    const entries = normalizeFeedEntries(data.feed?.entry);
     const pageReviews = entries.filter((entry) => entry["im:rating"]).map((entry, index) => ({
-      id: String(entry.id?.label || `${appId}-${page}-${index}`),
+      id: String(entry.id?.label || `${appId}-${hash(endpoint).slice(0, 8)}-${index}`),
       title: String(entry.title?.label || "").trim(),
       content: String(entry.content?.label || "").trim(),
       rating: Number(entry["im:rating"]?.label || 0),
@@ -133,10 +137,17 @@ async function collectAppleReviews(appId, pages) {
       updatedAt: String(entry.updated?.label || ""),
       source: "apple-rss-us"
     }));
-    if (pageReviews.length === 0) break;
-    reviews.push(...pageReviews);
+    if (pageReviews.length > 0) {
+      reviews.push(...pageReviews);
+      break;
+    }
   }
   return reviews;
+}
+
+function normalizeFeedEntries(entry) {
+  if (Array.isArray(entry)) return entry;
+  return entry ? [entry] : [];
 }
 
 function cleanReviews(rawReviews) {
@@ -581,6 +592,7 @@ function titleCase(value) {
 
 module.exports = {
   runAnalysis,
+  collectAppleReviews,
   parseImportedReviews,
   cleanReviews,
   summarizeReviews,

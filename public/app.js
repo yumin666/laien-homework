@@ -152,6 +152,15 @@ const App = {
       return this.result?.validation || { validLinks: [], invalidLinks: [], warnings: [] };
     }
   },
+  watch: {
+    appUrl(newValue, oldValue) {
+      if (oldValue && newValue !== oldValue && this.reviewSource === "cached-sample") {
+        this.importedReviews = null;
+        this.reviewSource = null;
+        this.notice = "";
+      }
+    }
+  },
   methods: {
     setLanguage(language) {
       this.language = language;
