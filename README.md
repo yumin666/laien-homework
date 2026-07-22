@@ -36,6 +36,8 @@ https://apps.apple.com/us/app/workout-for-women-home-gym/id839285684
 
 This feed exposes a limited recent review set rather than complete historical review data, so the UI and result payload report this limitation. Requests are bounded by `MAX_REVIEW_PAGES` to avoid unnecessary load.
 
+If Apple RSS returns no entries for the assessment app or for a temporary storefront/network condition, use the cached sample or import JSON/CSV reviews. The app reports this transparently instead of fabricating live reviews.
+
 ## Local Setup
 
 ```bash

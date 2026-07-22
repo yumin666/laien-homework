@@ -31,7 +31,9 @@ async function runAnalysis({ appUrl = DEFAULT_APP_URL, goal = "", importedReview
       throw error;
     }
   }
-  if (rawReviews.length === 0) throw new Error("No reviews were collected or imported.");
+  if (rawReviews.length === 0) {
+    throw new Error("Apple RSS returned no usable reviews for this app. Use Cached Sample for the assessment demo, or import JSON/CSV reviews supplied by the evaluator.");
+  }
   stages.push(stage("collect", "done", `${rawReviews.length} reviews collected`));
 
   const cleanedReviews = cleanReviews(rawReviews);

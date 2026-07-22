@@ -26,6 +26,8 @@ body {
 }
 
 .app-header {
+  height: auto;
+  min-height: 84px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -33,7 +35,7 @@ body {
   border-bottom: 1px solid var(--line);
   background: linear-gradient(90deg, var(--accent-dark), var(--accent));
   color: #fff;
-  padding: 0 24px;
+  padding: 14px 24px;
 }
 
 .app-header h1 {
