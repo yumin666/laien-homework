@@ -1,4 +1,5 @@
 const assert = require("assert");
+const { execFileSync } = require("child_process");
 const { createStore } = require("../src/db/store");
 const {
   runAnalysis,
@@ -14,6 +15,8 @@ const {
 } = require("../src/analysis/pipeline");
 
 async function main() {
+  execFileSync(process.execPath, ["-c", "public/app.js"], { cwd: require("path").join(__dirname, "..") });
+
   const reviews = [
     { id: "a", title: "Paywall", content: "Subscription pricing is confusing", rating: 2, version: "1.0", author: "u1" },
     { id: "b", title: "Paywall", content: "Subscription pricing is confusing", rating: 2, version: "1.0", author: "u1" },

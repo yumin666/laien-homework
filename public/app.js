@@ -48,7 +48,20 @@ const COPY = {
     limitations: "Limitations",
     logs: "Logs",
     fallback: "DeepSeek is not configured or failed. Deterministic fallback is for offline demonstration only.",
-    noData: "No data"
+    noData: "No data",
+    saved: "Saved",
+    pending: "Pending",
+    fallbackLabel: "Fallback",
+    stages: {
+      scope: "Scope",
+      collect: "Collect",
+      clean: "Clean",
+      "scope-data": "Select",
+      semantic: "Analyze",
+      plan: "Plan",
+      validate: "Validate",
+      complete: "Complete"
+    }
   },
   zh: {
     title: "App Review Insights",
@@ -84,7 +97,20 @@ const COPY = {
     limitations: "限制说明",
     logs: "日志",
     fallback: "DeepSeek 未配置或调用失败。确定性兜底仅用于离线演示。",
-    noData: "暂无数据"
+    noData: "暂无数据",
+    saved: "已保存",
+    pending: "待运行",
+    fallbackLabel: "兜底结果",
+    stages: {
+      scope: "范围",
+      collect: "采集",
+      clean: "清洗",
+      "scope-data": "筛选",
+      semantic: "分析",
+      plan: "规划",
+      validate: "校验",
+      complete: "完成"
+    }
   }
 };
 
@@ -226,6 +252,9 @@ const App = {
     join(value, fallback = "") {
       return Array.isArray(value) && value.length ? value.join(" | ") : (value || fallback || this.t.noData);
     },
+    stageTitle(id, fallback) {
+      return this.t.stages?.[id] || fallback;
+    },
     json(value) {
       return JSON.stringify(value, null, 2);
     },
@@ -275,8 +304,8 @@ const App = {
 
           <el-card shadow="never" class="summary-card">
             <template #header>{{ t.summary }}</template>
-            <div class="metric"><span>{{ t.storage }}</span><strong>{{ result ? 'Saved' : 'Pending' }}</strong></div>
-            <div class="metric"><span>{{ t.model }}</span><strong>{{ result?.model?.usedModel ? result.model.model : 'Fallback' }}</strong></div>
+            <div class="metric"><span>{{ t.storage }}</span><strong>{{ result ? t.saved : t.pending }}</strong></div>
+            <div class="metric"><span>{{ t.model }}</span><strong>{{ result?.model?.usedModel ? result.model.model : t.fallbackLabel }}</strong></div>
             <div class="metric"><span>{{ t.cleanReviews }}</span><strong>{{ stats.total || 0 }}</strong></div>
             <div class="metric"><span>{{ t.averageRating }}</span><strong>{{ stats.averageRating || '-' }}</strong></div>
             <div class="metric"><span>{{ t.lowRatings }}</span><strong>{{ stats.lowRatingCount || 0 }}</strong></div>
@@ -286,7 +315,7 @@ const App = {
         <el-main class="main-panel">
           <el-card shadow="never" class="stages-card">
             <el-steps :active="completedStageCount" finish-status="success" align-center>
-              <el-step v-for="[id, label] in stages" :key="id" :title="label" :description="stageMap[id]?.detail || ''" :status="stageMap[id]?.status === 'warning' ? 'error' : undefined" />
+              <el-step v-for="[id, label] in stages" :key="id" :title="stageTitle(id, label)" :description="stageMap[id]?.detail || ''" :status="stageMap[id]?.status === 'warning' ? 'error' : undefined" />
             </el-steps>
           </el-card>
 
@@ -303,7 +332,7 @@ const App = {
                 <el-tab-pane v-for="[id, key] in tabs" :key="id" :name="id" :label="t[key]">
                   <section v-if="id === 'overview'" class="overview-grid">
                     <el-card shadow="never"><span>{{ t.source }}</span><strong>{{ result.collection.source }}</strong></el-card>
-                    <el-card shadow="never"><span>{{ t.model }}</span><strong>{{ result.model.usedModel ? result.model.model : 'Fallback' }}</strong></el-card>
+                    <el-card shadow="never"><span>{{ t.model }}</span><strong>{{ result.model.usedModel ? result.model.model : t.fallbackLabel }}</strong></el-card>
                     <el-card shadow="never"><span>{{ t.cleanReviews }}</span><strong>{{ stats.total || 0 }}</strong></el-card>
                     <el-card shadow="never"><span>{{ t.averageRating }}</span><strong>{{ stats.averageRating || '-' }}</strong></el-card>
                     <el-card shadow="never"><span>{{ t.validLinks }}</span><strong>{{ validation.validLinks.length }}</strong></el-card>
