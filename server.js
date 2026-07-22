@@ -41,6 +41,7 @@ const server = http.createServer(async (req, res) => {
         appUrl: body.appUrl,
         goal: body.goal,
         importedReviews: body.importedReviews,
+        reviewSource: body.reviewSource,
         store,
         env: process.env
       });

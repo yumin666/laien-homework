@@ -95,6 +95,7 @@ const App = {
       appUrl: "https://apps.apple.com/us/app/workout-for-women-home-gym/id839285684",
       goal: "Focus on subscription conversion, workout usability, low-rating blockers, conflicting feedback, and the next two release versions.",
       importedReviews: null,
+      reviewSource: null,
       result: null,
       loading: false,
       error: "",
@@ -164,7 +165,7 @@ const App = {
         const response = await fetch("/api/analysis", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ appUrl: this.appUrl, goal: this.goal, importedReviews: this.importedReviews })
+          body: JSON.stringify({ appUrl: this.appUrl, goal: this.goal, importedReviews: this.importedReviews, reviewSource: this.reviewSource })
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Analysis failed");
@@ -182,6 +183,7 @@ const App = {
       const response = await fetch("/api/sample");
       const data = await response.json();
       this.importedReviews = data.reviews;
+      this.reviewSource = "cached-sample";
       this.appUrl = data.appUrl || this.appUrl;
       await this.start();
     },
@@ -194,6 +196,7 @@ const App = {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Import failed");
         this.importedReviews = data.reviews;
+        this.reviewSource = "user-import";
         this.notice = this.t.imported.replace("{count}", data.reviews.length);
       } catch (error) {
         this.error = error.message;

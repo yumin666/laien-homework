@@ -98,9 +98,12 @@ async function main() {
     appUrl: "https://apps.apple.com/us/app/foo/id839285684",
     goal: "Focus on subscription and beginner workout blockers",
     importedReviews: sampleReviews,
+    reviewSource: "cached-sample",
     store: null,
     env: {}
   });
+  assert.strictEqual(result.collection.source, "cached sample reviews");
+  assert.ok(result.collection.limitations.some((limitation) => limitation.includes("offline demonstration")));
   assert.ok(result.deliverables.prd.requirements.length > 0);
   assert.ok(result.deliverables.versionPlan.versions.some((version) => version.version === "V1"));
   assert.ok(result.deliverables.testCases.every((testCase) => testCase.requirementId));

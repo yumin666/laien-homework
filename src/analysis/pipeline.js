@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const DEFAULT_APP_URL = "https://apps.apple.com/us/app/workout-for-women-home-gym/id839285684";
 const MIN_SCOPED_REVIEWS = 3;
 
-async function runAnalysis({ appUrl = DEFAULT_APP_URL, goal = "", importedReviews, store, env = process.env }) {
+async function runAnalysis({ appUrl = DEFAULT_APP_URL, goal = "", importedReviews, reviewSource = "user-import", store, env = process.env }) {
   const stages = [];
   const startedAt = new Date().toISOString();
   const appId = extractAppId(appUrl);
@@ -16,7 +16,15 @@ async function runAnalysis({ appUrl = DEFAULT_APP_URL, goal = "", importedReview
   let collection = { source: "import", limitations: [] };
   if (Array.isArray(importedReviews) && importedReviews.length > 0) {
     rawReviews = importedReviews.map(normalizeReview);
-    collection.limitations.push("Reviews were supplied by user import; original storefront cannot be independently verified.");
+    if (reviewSource === "cached-sample") {
+      collection = {
+        source: "cached sample reviews",
+        limitations: ["Cached sample reviews are bundled for offline demonstration; they do not replace live collection or evaluator-supplied unseen data."]
+      };
+    } else {
+      collection = { source: "user imported reviews", limitations: [] };
+      collection.limitations.push("Reviews were supplied by user import; original storefront cannot be independently verified.");
+    }
   } else {
     if (!appId) throw new Error("Invalid App Store URL. It must contain an id like id839285684.");
     try {
