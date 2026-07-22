@@ -1,90 +1,216 @@
-# LaienTech iOS App Review Analysis and Version Planning Assessment
+# App Review Insights
 
-## Background
+App Review Insights is a runnable interview project for turning App Store reviews into evidence-grounded product findings, version plans, PRDs, and QA test cases.
 
-This assessment uses the following real iOS app as the primary development and demonstration example:
+The app accepts a U.S. App Store URL plus an analysis goal, collects or imports reviews, cleans and scopes the data, uses DeepSeek for semantic analysis, and validates traceability from source reviews to generated requirements and test cases.
 
-https://apps.apple.com/us/app/workout-for-women-home-gym/id839285684
+## What This Builds
 
-If you have access to an overseas network environment, use the U.S. App Store link above. If not, and the U.S. link cannot be opened or redirects, use the China App Store link only to open the app detail page:
+- A local Node.js + Vue 3 web app.
+- Apple U.S. App Store review collection through the RSS customer review feed.
+- JSON and CSV review import for evaluator-supplied datasets.
+- DeepSeek-driven topic discovery, issue consolidation, findings, and requirement drafts.
+- Deterministic cleaning, deduplication, statistics, and traceability validation.
+- A default English UI with a Chinese language switch.
+- Optional MySQL persistence; the app runs without MySQL by default.
 
-https://apps.apple.com/cn/app/workout-for-women-home-gym/id839285684
+## Why DeepSeek Is Used
 
-Regardless of which link is used to open the page, the review data used in this assessment must come from the U.S. App Store storefront.
+DeepSeek performs the core semantic analysis at runtime: dynamic topic discovery, issue consolidation, evidence-grounded findings, conflict and uncertainty analysis, and requirement drafting. Deterministic fallback output is labeled as offline fallback and is not presented as satisfying the assessment's model-driven analysis requirement.
 
-You are expected to complete a full product analysis workflow around App Store user reviews, covering data collection, review cleaning, review classification, issue analysis, version planning, PRD writing, and test case design. The final results should be presented through a runnable UI.
+The model is instructed to return strict JSON, cite only supplied review IDs, separate evidence from assumptions, and call out conflicts or uncertainty. The backend then sanitizes all model output before it is shown in the UI.
 
-This assessment focuses on the candidate's vibe coding ability. Candidates should use vibe coding to complete the full process: collecting data, cleaning and analyzing reviews, abstracting product requirements, planning versions, designing test cases, and productizing the analysis workflow into an interactive experience.
+## Data Collection Method
 
-## Objective
+The live collector uses Apple's U.S. RSS customer review feed:
 
-Build a runnable tool or web application. In the UI, the user should be able to enter a valid U.S. App Store app link. Use the following link as the primary example:
+```text
+https://itunes.apple.com/us/rss/customerreviews/page={page}/id={appId}/sortby=mostrecent/json
+```
+
+The app extracts the numeric app ID from links such as:
 
 ```text
 https://apps.apple.com/us/app/workout-for-women-home-gym/id839285684
 ```
 
-The user should also be able to provide an analysis goal or constraint, such as focusing on subscription conversion, workout usability, a specific app version, or low-rating reviews. The system must not depend on app-specific hard-coded categories, findings, requirements, or test cases.
+This feed exposes a limited recent review set rather than complete historical review data, so the UI and result payload report this limitation. Requests are bounded by `MAX_REVIEW_PAGES` to avoid unnecessary load.
 
-After the user clicks "Start", the system should automatically complete the following workflow and display the results in the UI:
+## Local Setup
 
-1. Determine the analysis scope based on the user's goal and the available data.
-2. Collect review data for the app.
-3. Clean, deduplicate, and structure the review data.
-4. Dynamically classify and analyze the reviews, rather than relying only on fixed keyword mappings or a predefined issue taxonomy.
-5. Evaluate whether the available evidence is sufficient, and identify conflicting feedback, uncertainty, and data limitations.
-6. Create an update plan based on the analysis, produce a PRD, and split the scope into multiple versions when necessary.
-7. Generate test cases based on the PRD, with each test case linked to its requirement and source user reviews.
-8. Validate the traceability chain from reviews to findings, requirements, and test cases. Unsupported conclusions must be removed, revised, or explicitly marked as assumptions.
-9. Display the execution progress in the UI, including the stages, intermediate results, validation results, errors, and revisions.
-10. Display the interim and final deliverables, including raw reviews, cleaned data, classification results, findings, PRD drafts, and test case drafts.
+```bash
+npm install
+cp .env.example .env
+npm test
+npm start
+```
 
-## AI Requirements
+Open:
 
-- At least one core semantic task must be model-driven. Suitable tasks include dynamic topic discovery, issue consolidation, evidence-grounded analysis, requirement generation, or test case generation. Implementing all semantic analysis only through fixed keywords, regular expressions, lookup tables, or manually predefined mappings does not meet this requirement.
-- Deterministic rules are encouraged where they are appropriate, including data collection, deduplication, field normalization, validation, and safety checks. The submission should explain why rules, statistical methods, or language models were chosen for each stage.
-- Every major finding must include its source review IDs or excerpts, supporting sample count, confidence or uncertainty, and any material conflicting evidence. Model-generated conclusions must remain distinguishable from deterministic statistics.
-- The submission must document the model and provider used, the main prompts or tool definitions, model configuration, failure-handling strategy, and measures used to reduce hallucinations and unsupported conclusions.
-- Hosted APIs, local models, or other model runtimes may be used. Secrets must be supplied through environment configuration and must not be committed to the repository.
+```text
+http://localhost:8080
+```
 
-## Deliverables
+On Windows PowerShell, use `npm.cmd` if script execution policy blocks `npm.ps1`:
 
-Submit a GitHub project link and ensure the project can run locally.
+```powershell
+npm.cmd install
+npm.cmd test
+npm.cmd start
+```
 
-The GitHub project should include complete source code, dependency configuration, running instructions, an explanation of the data collection method, and any necessary sample output or cached data so that interviewers can review the results even when external network access is unavailable. Cached results must be clearly labeled and must not replace the ability to process a previously unseen input when the required network and model configuration are available.
+## Environment Variables
 
-The application must also support importing review data from a documented JSON or CSV format. During evaluation, interviewers may provide a different valid App Store link, a previously unseen compatible review dataset, or a new analysis goal. The submission will be evaluated on whether it can produce grounded results without app-specific hard coding.
+Copy `.env.example` to `.env` and configure:
 
-The GitHub project should preserve a complete commit history to show the candidate's implementation process, iteration process, and use of vibe coding.
+```dotenv
+PORT=8080
+MAX_REVIEW_PAGES=5
 
-## Technical Requirements and Notes
+DEEPSEEK_API_KEY=
+DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_BASE_URL=https://api.deepseek.com
 
-- There is no restriction on the tech stack.
-- You may use frontend frameworks, backend frameworks, data analysis libraries, visualization libraries, natural language processing models, or large language model APIs.
-- You may use public APIs or third-party data collection libraries, but you must clearly explain the data source and its limitations.
-- Pay attention to request rate limits and avoid placing abnormal load on the target site.
-- Provide a sample environment file or equivalent configuration instructions, but do not include API keys or other secrets.
-- A non-runnable document-only submission is not acceptable.
+MYSQL_HOST=
+MYSQL_PORT=3306
+MYSQL_USER=
+MYSQL_PASSWORD=
+MYSQL_DATABASE=
+```
 
-## Evaluation Criteria
+`DEEPSEEK_API_KEY` is required for formal model-driven analysis. Do not commit `.env`.
 
-This assessment focuses on whether the candidate can turn real user reviews into an executable product plan. The evaluation will mainly consider:
+## Running Without MySQL
 
-- Whether the data is authentic and reproducible, with a clear explanation of its source and limitations.
-- Whether review cleaning, classification, and analysis are reasonable, and whether they surface concrete user problems.
-- Whether model-driven semantic analysis adds capability beyond fixed rules and generalizes to previously unseen reviews, apps, and analysis goals.
-- Whether findings distinguish evidence, deterministic statistics, model-generated conclusions, uncertainty, and conflicting feedback.
-- Whether the PRD is grounded in user problems, with clear requirement boundaries, priorities, and version planning.
-- Whether the test cases cover the PRD and can be traced back to the corresponding user reviews.
-- Whether the UI clearly presents the workflow and results, and whether the project can run locally with clear delivery instructions.
+No database is required for local evaluation. If MySQL variables are empty, the server uses an in-memory store for analysis runs.
 
-## Important Notes
+## Optional MySQL Persistence
 
-- This is not merely a web scraping task, nor is it merely a UI presentation task.
-- The core challenge is to identify problems from real user reviews and turn them into executable product requirements and test plans.
-- Review data should not be collected by scraping only the visible content of the page. There are more appropriate ways to retrieve App Store review data; candidates are expected to explore them independently and explain their implementation.
-- Requirements in the PRD must be traceable to specific user reviews.
-- Test cases must be able to verify whether the corresponding requirements solve the problems raised in those reviews.
-- The use of an AI coding assistant during implementation does not by itself satisfy the AI requirements. The submitted application must demonstrate model-driven semantic analysis at runtime.
-- Interviewers may test the application with previously unseen data, mixed languages, duplicate or conflicting reviews, insufficient evidence, or temporary collection/model failures.
-- If the amount of available data is limited or data collection is constrained, state this transparently in the results. Do not fabricate data.
+To persist runs, create the schema in `db/schema.sql`, then set:
+
+```dotenv
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_DATABASE=app_review_insights
+```
+
+When configured, analysis runs and cleaned reviews are saved through `mysql2`.
+
+## Importing JSON or CSV Reviews
+
+JSON can be either an array:
+
+```json
+[
+  {
+    "id": "review-1",
+    "title": "Confusing trial",
+    "content": "I did not understand when the subscription would start.",
+    "rating": 2,
+    "version": "3.2.1",
+    "author": "user-a",
+    "date": "2026-07-01"
+  }
+]
+```
+
+or an object with a `reviews` array:
+
+```json
+{
+  "reviews": [
+    {
+      "review_id": "review-1",
+      "subject": "Confusing trial",
+      "body": "I did not understand when the subscription would start.",
+      "score": 2,
+      "app_version": "3.2.1",
+      "user": "user-a",
+      "date": "2026-07-01"
+    }
+  ]
+}
+```
+
+CSV headers can include:
+
+```csv
+id,title,content,rating,version,author,date
+review-1,Confusing trial,I did not understand when the subscription would start.,2,3.2.1,user-a,2026-07-01
+```
+
+Imported reviews are labeled as user supplied because the app cannot independently verify their original storefront.
+
+## Cached Sample Data
+
+`sample-data/workout-for-women-us-reviews.json` provides cached review data for offline demonstration. It is clearly labeled and does not replace live collection or evaluator-supplied imports.
+
+## Deterministic Rules vs Model-Driven Analysis
+
+Deterministic rules handle:
+
+- App ID extraction.
+- Apple RSS collection.
+- JSON/CSV parsing.
+- Field normalization.
+- Empty-content filtering.
+- Rating validation.
+- Deduplication.
+- Basic goal scoping.
+- Rating and version statistics.
+- Traceability validation.
+- Model output sanitization.
+
+DeepSeek handles:
+
+- Dynamic topic discovery.
+- Similar issue consolidation.
+- Evidence-grounded product findings.
+- Conflict and uncertainty analysis.
+- Requirement drafting from review evidence.
+
+## Traceability and Hallucination Controls
+
+Every major finding includes source review IDs, sample count, confidence, conflicts, and a generator label. Every requirement references findings and reviews. Every test case references a requirement and source reviews.
+
+The backend validates:
+
+- Review IDs cited by model output exist in the scoped dataset.
+- Requirements reference existing findings and reviews.
+- Test cases reference existing requirements.
+- Invalid IDs are removed and logged.
+- Unsupported conclusions are marked with assumptions or warnings.
+
+## Failure Handling
+
+The app reports these conditions instead of fabricating output:
+
+- Invalid App Store URL.
+- Apple RSS request failure.
+- No reviews returned.
+- No usable reviews after cleaning.
+- JSON or CSV parse failure.
+- Missing DeepSeek API key.
+- DeepSeek request failure.
+- Model JSON parse failure.
+- Invalid review IDs in model output.
+- Insufficient evidence after scoping.
+- Optional database save failure.
+
+## Tests
+
+Run:
+
+```bash
+npm test
+```
+
+The test suite covers App ID extraction, JSON/CSV import, cleaning and deduplication, scope fallback, deterministic analysis, model output sanitization, traceability validation, memory storage, and an end-to-end imported-review pipeline.
+
+## Evaluation Notes
+
+This project is not only a scraper and not only a UI presentation. The core workflow turns authentic or evaluator-supplied reviews into product planning artifacts that remain linked to source evidence.
+
+For a formal evaluation run, configure DeepSeek in `.env`, use a valid U.S. App Store app link or import a compatible dataset, and inspect the Overview, Topics & Findings, Version Plan, PRD, Test Cases, Traceability, and Raw JSON tabs.

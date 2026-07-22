@@ -1,0 +1,126 @@
+{
+  "appUrl": "https://apps.apple.com/us/app/workout-for-women-home-gym/id839285684",
+  "source": "Cached demo dataset shaped like Apple US App Store reviews. Use live Apple RSS when network is available.",
+  "reviews": [
+    {
+      "id": "sample-001",
+      "title": "Great workouts but the trial confused me",
+      "content": "The exercises are good and easy to follow, but I thought I was starting a free plan and then subscription screens kept appearing. I need clearer pricing before committing.",
+      "rating": 3,
+      "version": "24.6.0",
+      "author": "demo-user-1",
+      "updatedAt": "2026-07-02T12:10:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-002",
+      "title": "Too many paywalls",
+      "content": "I wanted beginner home workouts but most things I tapped led to premium. The app should show what is free and what is paid before I build a plan.",
+      "rating": 2,
+      "version": "24.6.0",
+      "author": "demo-user-2",
+      "updatedAt": "2026-07-03T08:20:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-003",
+      "title": "Beginner mode moves too fast",
+      "content": "The workout timer jumps to the next move before I understand the posture. I wish there were slower transitions and better previews for beginners.",
+      "rating": 2,
+      "version": "24.5.1",
+      "author": "demo-user-3",
+      "updatedAt": "2026-06-29T09:30:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-004",
+      "title": "Love the short sessions",
+      "content": "The 7 minute workouts help me stay consistent. I like the voice prompts and the simple plan.",
+      "rating": 5,
+      "version": "24.6.0",
+      "author": "demo-user-4",
+      "updatedAt": "2026-07-01T10:00:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-005",
+      "title": "Hard to cancel",
+      "content": "The subscription was hard to understand and I could not find where to cancel. This made me nervous about trying premium again.",
+      "rating": 1,
+      "version": "24.6.0",
+      "author": "demo-user-5",
+      "updatedAt": "2026-07-04T14:42:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-006",
+      "title": "Needs knee friendly options",
+      "content": "Some exercises are painful for my knees. I need swaps or a low impact filter so I can complete a workout safely.",
+      "rating": 3,
+      "version": "24.5.1",
+      "author": "demo-user-6",
+      "updatedAt": "2026-06-25T16:15:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-007",
+      "title": "Progress disappeared",
+      "content": "After the latest update my workout streak disappeared. I still like the workouts but losing progress was frustrating.",
+      "rating": 2,
+      "version": "24.6.0",
+      "author": "demo-user-7",
+      "updatedAt": "2026-07-05T11:05:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-008",
+      "title": "Good premium plan",
+      "content": "I paid for premium and the meal plan plus workouts are worth it. The subscription screen was clear for me.",
+      "rating": 5,
+      "version": "24.6.0",
+      "author": "demo-user-8",
+      "updatedAt": "2026-07-06T07:55:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-009",
+      "title": "Audio cues overlap music",
+      "content": "The voice coach is helpful, but the audio sometimes overlaps with my music and I miss the next exercise instruction.",
+      "rating": 3,
+      "version": "24.4.0",
+      "author": "demo-user-9",
+      "updatedAt": "2026-06-20T12:00:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-010",
+      "title": "No equipment filter is useful",
+      "content": "I like that I can work out at home without equipment. Please keep adding beginner routines.",
+      "rating": 5,
+      "version": "24.5.1",
+      "author": "demo-user-10",
+      "updatedAt": "2026-06-21T18:45:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-011",
+      "title": "Plan does not adapt",
+      "content": "When I skip a day the plan does not adapt. It either makes me feel behind or repeats workouts that are too hard.",
+      "rating": 2,
+      "version": "24.5.1",
+      "author": "demo-user-11",
+      "updatedAt": "2026-06-23T08:12:00Z",
+      "source": "cached-sample"
+    },
+    {
+      "id": "sample-012",
+      "title": "Language mix in instructions",
+      "content": "Some exercise names showed in another language after update. It made the workout hard to follow.",
+      "rating": 2,
+      "version": "24.6.0",
+      "author": "demo-user-12",
+      "updatedAt": "2026-07-07T19:22:00Z",
+      "source": "cached-sample"
+    }
+  ]
+}
