@@ -167,15 +167,20 @@ function selectScope(reviews, goal) {
   const text = String(goal || "").toLowerCase();
   let selected = reviews;
   const wantsLowRating = /\b(low|bad|negative|poor|1-star|2-star|one-star|two-star)\b/.test(text) || /低评|差评|一星|二星/.test(String(goal || ""));
-  if (wantsLowRating) {
+  if (wantsLowRating || hasChineseLowRatingGoal(goal)) {
     selected = reviews.filter((review) => review.rating <= 3);
   }
   const versionMatch = String(goal || "").match(/version\s*([\d.]+)/i) || String(goal || "").match(/版本\s*([\d.]+)/);
-  if (versionMatch) {
-    const versionScoped = selected.filter((review) => String(review.version).includes(versionMatch[1]));
+  const effectiveVersionMatch = versionMatch || String(goal || "").match(/版本\s*([\d.]+)/);
+  if (effectiveVersionMatch) {
+    const versionScoped = selected.filter((review) => String(review.version).includes(effectiveVersionMatch[1]));
     if (versionScoped.length >= MIN_SCOPED_REVIEWS) selected = versionScoped;
   }
   return selected.length >= MIN_SCOPED_REVIEWS ? selected : reviews;
+}
+
+function hasChineseLowRatingGoal(goal) {
+  return /低评|差评|负面|负反馈|一星|二星|1星|2星/.test(String(goal || ""));
 }
 
 function selectScopeWithMetadata(reviews, goal) {
@@ -269,14 +274,26 @@ async function analyzeWithDeepSeek(reviews, goal, env) {
       { role: "user", content: buildDeepSeekPrompt(reviews, goal) }
     ]
   };
-  const response = await fetch(`${env.DEEPSEEK_BASE_URL || "https://api.deepseek.com"}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`
-    },
-    body: JSON.stringify(payload)
-  });
+  const timeoutMs = Math.max(1, Number(env.DEEPSEEK_TIMEOUT_MS || 45_000));
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  let response;
+  try {
+    response = await fetch(`${env.DEEPSEEK_BASE_URL || "https://api.deepseek.com"}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+  } catch (error) {
+    if (error.name === "AbortError") throw new Error(`DeepSeek request timed out after ${timeoutMs}ms`);
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
   if (!response.ok) throw new Error(`DeepSeek request failed: HTTP ${response.status}`);
   const data = await response.json();
   const raw = data.choices?.[0]?.message?.content || "{}";

@@ -72,6 +72,7 @@ MAX_REVIEW_PAGES=5
 DEEPSEEK_API_KEY=
 DEEPSEEK_MODEL=deepseek-chat
 DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_TIMEOUT_MS=45000
 
 MYSQL_HOST=
 MYSQL_PORT=3306
@@ -81,6 +82,8 @@ MYSQL_DATABASE=
 ```
 
 `DEEPSEEK_API_KEY` is required for formal model-driven analysis. Do not commit `.env`.
+
+`DEEPSEEK_TIMEOUT_MS` caps model latency for demos and interviews. If DeepSeek is unavailable or too slow, the UI labels the deterministic fallback instead of spinning indefinitely.
 
 ## Running Without MySQL
 
@@ -101,6 +104,7 @@ Deployment steps:
    - `DEEPSEEK_API_KEY`
    - `DEEPSEEK_MODEL=deepseek-chat`
    - `DEEPSEEK_BASE_URL=https://api.deepseek.com`
+   - `DEEPSEEK_TIMEOUT_MS=45000`
    - `MAX_REVIEW_PAGES=5`
 5. Deploy the service and open the Render public URL.
 
@@ -216,6 +220,7 @@ The app reports these conditions instead of fabricating output:
 - JSON or CSV parse failure.
 - Missing DeepSeek API key.
 - DeepSeek request failure.
+- DeepSeek request timeout.
 - Model JSON parse failure.
 - Invalid review IDs in model output.
 - Insufficient evidence after scoping.
@@ -229,7 +234,11 @@ Run:
 npm test
 ```
 
-The test suite covers App ID extraction, JSON/CSV import, cleaning and deduplication, scope fallback, deterministic analysis, model output sanitization, traceability validation, memory storage, and an end-to-end imported-review pipeline.
+The test suite covers App ID extraction, JSON/CSV import, cleaning and deduplication, English and Chinese scope fallback, deterministic analysis, DeepSeek timeout fallback, model output sanitization, traceability validation, memory storage, frontend script syntax, and an end-to-end imported-review pipeline.
+
+## Interview Demo Guide
+
+For the business interview walkthrough, see `docs/interview-demo-guide.md`. It includes the demo flow, architecture explanation, file map, design tradeoffs, and common Q&A.
 
 ## Evaluation Notes
 

@@ -12,5 +12,7 @@ services:
         value: deepseek-chat
       - key: DEEPSEEK_BASE_URL
         value: https://api.deepseek.com
+      - key: DEEPSEEK_TIMEOUT_MS
+        value: 45000
       - key: MAX_REVIEW_PAGES
         value: 5

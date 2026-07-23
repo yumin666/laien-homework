@@ -81,6 +81,17 @@ async function main() {
   const scopedFallback = selectScope(cleaned, "version 9.9 low rating");
   assert.strictEqual(scopedFallback.length, cleaned.length);
 
+  const chineseScopeReviews = [
+    { id: "low-1", title: "Bad", content: "Too expensive", rating: 1, version: "2.0", author: "u1" },
+    { id: "low-2", title: "Poor", content: "Trial is unclear", rating: 2, version: "2.0", author: "u2" },
+    { id: "low-3", title: "Slow", content: "Workout flow is hard", rating: 3, version: "2.0", author: "u3" },
+    { id: "high-1", title: "Good", content: "Useful daily plan", rating: 5, version: "3.0", author: "u4" }
+  ];
+  const chineseLowScope = selectScope(chineseScopeReviews, "关注低评和差评");
+  assert.deepStrictEqual(chineseLowScope.map((review) => review.id), ["low-1", "low-2", "low-3"]);
+  const chineseVersionScope = selectScope(chineseScopeReviews, "版本 2.0");
+  assert.deepStrictEqual(chineseVersionScope.map((review) => review.id), ["low-1", "low-2", "low-3"]);
+
   const analysis = deterministicAnalysis(cleaned, "subscription beginner");
   assert.ok(analysis.findings.length > 0);
   assert.ok(analysis.requirements.length > 0);
@@ -128,6 +139,26 @@ async function main() {
   assert.ok(invalidTestReviewValidation.warnings.some((warning) => warning.includes("missing-review")));
 
   const sampleReviews = parseImportedReviews(JSON.stringify({ reviews }));
+  const fetchBeforeTimeoutTest = global.fetch;
+  global.fetch = async (_url, options = {}) => new Promise((resolve, reject) => {
+    options.signal?.addEventListener("abort", () => {
+      const error = new Error("aborted");
+      error.name = "AbortError";
+      reject(error);
+    });
+  });
+  const timeoutResult = await runAnalysis({
+    appUrl: "https://apps.apple.com/us/app/foo/id839285684",
+    goal: "Focus on subscription blockers",
+    importedReviews: sampleReviews,
+    reviewSource: "cached-sample",
+    store: null,
+    env: { DEEPSEEK_API_KEY: "test-key", DEEPSEEK_TIMEOUT_MS: "1" }
+  });
+  global.fetch = fetchBeforeTimeoutTest;
+  assert.strictEqual(timeoutResult.model.usedModel, false);
+  assert.ok(timeoutResult.logs.some((log) => log.includes("timed out")));
+
   const result = await runAnalysis({
     appUrl: "https://apps.apple.com/us/app/foo/id839285684",
     goal: "Focus on subscription and beginner workout blockers",
