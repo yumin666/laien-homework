@@ -190,3 +190,435 @@ Vue UI -> Node API -> Review Collection / Import -> Cleaning & Scoping -> DeepSe
 可以这样结束：
 
 > 这个 Demo 的重点是完整闭环：从评论数据出发，经过清洗、目标约束和大模型分析，形成产品发现、需求、版本计划和测试用例，并且每一步都有证据追踪和失败处理。我优先保证了可运行性、可解释性和现场演示稳定性。
+
+## 9. 我的整体思路
+
+拿到题目后，我先把它拆成三个层次：
+
+1. 数据层：评论从哪里来，如何导入，如何清洗，如何避免脏数据影响模型。
+2. 分析层：哪些部分交给规则，哪些部分交给大模型，模型输出如何被约束和校验。
+3. 交付层：分析结果不能只停留在 summary，要变成产品、研发和测试都能使用的产物。
+
+我的判断是，这个 Homework 的重点不是“做一个漂亮页面”，而是证明我能把模糊的用户反馈转成结构化的产品决策材料。所以我把核心目标定成：
+
+- 输入：App Store 链接、分析目标、评论数据。
+- 处理：采集、导入、清洗、去重、目标筛选、DeepSeek 语义分析。
+- 输出：topics、findings、version plan、PRD、test cases、traceability。
+- 保障：模型输出清洗、证据 ID 校验、失败降级、缓存样例。
+
+面试时可以这样说：
+
+> 我的第一步不是先写 UI，而是先定义数据闭环：评论如何进入、如何被清洗、如何被大模型分析、最后如何变成产品和测试可用的交付物。然后再围绕这个 pipeline 做前后端实现。
+
+## 10. 设计过程
+
+### 为什么采用 Vue + Node
+
+选择 Vue 3 + Element Plus 是因为：
+
+- 页面交互简单清晰，适合快速展示表单、步骤、表格和结果 Tab。
+- Element Plus 能快速提供稳定的表单、按钮、表格、步骤条和标签。
+- 面试官本地运行成本低，只需要 `npm install` 和 `npm start`。
+
+选择 Node HTTP 服务是因为：
+
+- 不需要额外框架，项目结构更透明。
+- 可以同时托管前端静态文件和 API。
+- 更容易让面试官看懂请求入口：`server.js` 里每个接口都很直接。
+
+面试时可以这样说：
+
+> 我没有引入太重的框架，因为这是面试作业，重点是业务闭环和可运行性。Node 原生 HTTP 足够支撑这个 demo，也能让代码结构更直接。
+
+### 为什么规则和大模型分工
+
+规则负责确定性工作：
+
+- App ID 提取。
+- Apple RSS 评论采集。
+- JSON/CSV 导入。
+- 字段归一化。
+- 空评论过滤。
+- 评分合法性校验。
+- 评论去重。
+- 目标范围筛选。
+- 统计指标。
+- 模型输出校验。
+- traceability validation。
+
+DeepSeek 负责语义工作：
+
+- 动态主题发现。
+- 相似问题合并。
+- 产品发现生成。
+- 冲突反馈识别。
+- 需求草拟。
+
+面试时可以这样说：
+
+> 我没有把所有逻辑都丢给模型。确定性、可校验的部分用规则做；需要语义理解和归纳的部分交给 DeepSeek。这样结果更稳定，也更容易解释。
+
+### 为什么要做模型输出清洗
+
+大模型可能出现三个问题：
+
+- 引用不存在的 review id。
+- 生成没有证据支撑的 finding。
+- 输出格式不完全符合预期。
+
+所以后端做了 sanitize：
+
+- 只保留存在于 scopedReviews 里的 review id。
+- 删除没有有效证据的 finding。
+- 删除没有有效 finding/review 来源的 requirement。
+- 把 warning 写入 logs。
+- 再做 traceability validation。
+
+面试时可以这样说：
+
+> Prompt 是第一层约束，后端 sanitize 是第二层约束，traceability validation 是第三层约束。这样即使模型输出不完美，也不会直接污染最终结果。
+
+## 11. 实现过程
+
+可以按这个顺序讲：
+
+1. 先实现后端 pipeline。
+   - 提取 App Store app id。
+   - 支持 Apple RSS 采集。
+   - 支持 JSON/CSV 导入。
+   - 做评论归一化、清洗和去重。
+
+2. 再接入 DeepSeek。
+   - 构造 prompt，要求严格 JSON。
+   - 要求模型只能引用传入的 review id。
+   - 设置 temperature 较低，降低随机性。
+   - 增加模型超时，避免现场演示一直等待。
+
+3. 再生成业务交付物。
+   - findings：产品洞察。
+   - requirements：PRD 需求。
+   - versionPlan：版本计划。
+   - testCases：测试用例。
+   - validation：追踪校验。
+
+4. 最后做前端展示。
+   - 左侧配置区。
+   - 顶部语言切换。
+   - 步骤条展示 pipeline 状态。
+   - 多个 Tab 展示不同交付物。
+
+5. 最后补测试和文档。
+   - 单测覆盖清洗、导入、筛选、模型超时、追踪校验。
+   - README 写启动方式。
+   - Demo guide 写面试讲解路径。
+
+面试时可以这样说：
+
+> 实现顺序上，我先做核心 pipeline，确保业务逻辑闭环可跑，再做 UI 展示。这样即使 UI 还没完善，核心分析能力也能先被验证。
+
+## 12. 我是如何使用 Codex 的
+
+这个 Homework 过程中，我主要把 Codex 当成一个结对开发助手，而不是直接“一键生成代码”。
+
+我用 Codex 做了这些事情：
+
+1. 需求拆解
+   - 和 Codex 一起把题目拆成采集、分析、PRD、测试用例、追踪校验几个模块。
+   - 明确哪些功能必须满足题目要求，哪些属于加分项。
+
+2. 技术方案选择
+   - 讨论是否需要数据库。
+   - 最后选择默认 memory store、MySQL 可选，降低运行门槛。
+   - 讨论 UI 语言，最后做成默认英文、可切中文。
+
+3. 代码实现
+   - 让 Codex 根据设计实现 Node API、Vue 页面、DeepSeek 调用和测试。
+   - 我负责确认方向、补充业务要求、检查最终效果。
+
+4. 调试和测试
+   - 用 Codex 跑 `npm test`。
+   - 检查 `/api/health`、`/api/sample`、`/api/analysis`。
+   - 发现并修复中文文案、前端语法、模型超时等问题。
+
+5. 文档和演示准备
+   - 让 Codex 整理 README。
+   - 生成业务面 Demo 讲解稿。
+   - 准备常见追问回答。
+
+面试时建议这样说，比较真实也不心虚：
+
+> 这个项目我有使用 Codex 辅助开发，主要用它做需求拆解、代码生成、调试测试和文档整理。但架构取舍、功能确认、题目要求校验和最终演示路径是我自己主导的。我把 Codex 当作结对开发工具，提高实现效率，而不是绕过理解过程。
+
+如果面试官继续问“哪些地方是你自己判断的”，可以说：
+
+- 是否使用数据库是我判断的：默认不依赖数据库，保证本地运行简单。
+- 大模型必须接入是我判断的：所以 DeepSeek 是核心分析链路，不是装饰。
+- 缓存样例是我判断的：为了面试现场稳定，但仍然明确标注来源。
+- traceability 是我判断的：用来控制模型幻觉，体现工程可靠性。
+
+## 13. Demo 每一步怎么展示、怎么说
+
+### Step 1：启动项目
+
+命令：
+
+```bash
+npm test
+npm start
+```
+
+说法：
+
+> 我先跑一下测试，确认核心 pipeline、导入、清洗、模型超时和追踪校验都通过。然后启动本地服务。
+
+### Step 2：打开首页
+
+地址：
+
+```text
+http://localhost:8080
+```
+
+说法：
+
+> 这是首页，左侧是输入和运行摘要，右侧是分析阶段和结果区。默认是英文，因为题目交付可以面向英文评估，但右上角可以切中文。
+
+### Step 3：切中文
+
+操作：点击右上角 `中文`。
+
+说法：
+
+> 这里我做了中英文切换。中文模式下，表单、摘要、Tab 和阶段名都会切换，方便中文业务沟通。
+
+### Step 4：介绍输入区
+
+指左侧两个输入框：
+
+说法：
+
+> App Store 链接用来指定分析对象。分析目标或约束用来告诉系统关注什么，比如低评分、订阅转化、某个版本、可用性问题，或者未来两个版本规划。
+
+### Step 5：使用缓存样例
+
+操作：点击 `使用缓存样例`。
+
+说法：
+
+> 这里我用缓存样例演示，主要是避免现场 Apple RSS 或网络不稳定。但它不是静态假结果，仍然会走完整 pipeline，并调用 DeepSeek 做语义分析。结果里也会明确标注 source 是 cached sample reviews。
+
+### Step 6：看运行摘要
+
+等结果出来后，看左侧：
+
+说法：
+
+> 这里模型显示 deepseek-chat，说明这次语义分析是大模型驱动。下面是清洗后的评论数量、平均评分和低评分数量，用来快速判断数据范围。
+
+### Step 7：讲概览
+
+操作：停留在 `概览`。
+
+说法：
+
+> 概览看整体结果，包括数据来源、模型、评论数和追踪校验结果。这里无效链接是 0，说明生成结果里的证据链是完整的。
+
+### Step 8：讲评论
+
+操作：点击 `评论`。
+
+说法：
+
+> 这里展示进入分析的评论。后面的 finding 和 requirement 都会引用这些 review id，确保结论能回到原始评论。
+
+### Step 9：讲主题与发现
+
+操作：点击 `主题与发现`。
+
+说法：
+
+> 这一页是 DeepSeek 对评论做的主题归纳和产品发现。每个 finding 都有 evidenceReviewIds、sampleCount 和 confidence，不只是自然语言总结。
+
+### Step 10：讲版本计划
+
+操作：点击 `版本计划`。
+
+说法：
+
+> 这里把需求安排到 V1、V2 或 Later。我的思路是 V1 处理证据最强、影响最大的阻塞问题，V2 做体验增强，Later 放低置信度或范围更大的需求。
+
+### Step 11：讲 PRD
+
+操作：点击 `PRD`。
+
+说法：
+
+> PRD 里每个 requirement 都有问题描述、优先级、版本、来源 finding 和来源 review。这个部分可以作为产品文档初稿。
+
+### Step 12：讲测试用例
+
+操作：点击 `测试用例`。
+
+说法：
+
+> 我把需求进一步转成 QA 测试用例，包括前置条件、步骤和预期结果。这样从用户反馈到产品需求，再到测试验证，是一个闭环。
+
+### Step 13：讲追踪校验
+
+操作：点击 `追踪校验`。
+
+说法：
+
+> 这个是防止模型幻觉的关键。系统会检查 review 到 finding、finding 到 requirement、requirement 到 test case 的关系。如果模型引用了不存在的 id，会被过滤并记录 warning。
+
+### Step 14：讲原始 JSON
+
+操作：点击 `原始 JSON`。
+
+说法：
+
+> 原始 JSON 用于后续系统集成，比如导出到 Jira、飞书、测试平台或数据库。也方便评估人员检查模型输出结构。
+
+## 14. 可测试 App Store 链接
+
+现场最稳建议先用缓存样例。如果想测试 live App Store RSS，可以试下面这些官方 App Store 链接。不同 App 的 Apple RSS 可能会因为地区、评论可用性或网络返回空，这时使用缓存样例是正常兜底路径。
+
+### 健康/健身类
+
+```text
+https://apps.apple.com/us/app/workout-for-women-home-gym/id839285684
+```
+
+适合约束：
+
+```text
+Focus on subscription conversion, workout usability, low-rating blockers, conflicting feedback, and the next two release versions.
+```
+
+```text
+https://apps.apple.com/us/app/strava-run-bike-walk/id426826309
+```
+
+适合约束：
+
+```text
+Focus on tracking accuracy, social sharing friction, subscription value perception, Apple Watch experience, and V1/V2 release planning.
+```
+
+```text
+https://apps.apple.com/us/app/calm/id571800810
+```
+
+适合约束：
+
+```text
+Focus on onboarding, sleep content discovery, subscription trial confusion, low-rating complaints, and retention improvements.
+```
+
+```text
+https://apps.apple.com/us/app/headspace-sleep-meditation/id493145008
+```
+
+适合约束：
+
+```text
+Focus on meditation onboarding, content navigation, subscription cancellation pain points, beginner user friction, and QA test cases.
+```
+
+### 教育/效率类
+
+```text
+https://apps.apple.com/us/app/duolingo-language-lessons/id570060128
+```
+
+适合约束：
+
+```text
+Focus on lesson flow, paywall friction, streak motivation, beginner confusion, conflicting feedback, and next two versions.
+```
+
+```text
+https://apps.apple.com/us/app/todoist-to-do-list-calendar/id572688855
+```
+
+适合约束：
+
+```text
+Focus on task capture speed, calendar integration, reminder reliability, collaboration friction, and high-priority product fixes.
+```
+
+### 音乐/内容类
+
+```text
+https://apps.apple.com/us/app/spotify-music-and-podcasts/id324684580
+```
+
+适合约束：
+
+```text
+Focus on playback reliability, playlist discovery, ads or Premium conversion friction, offline listening, and regression test cases.
+```
+
+## 15. 更多分析约束模板
+
+你可以直接复制到“分析目标或约束”里试。
+
+### 通用产品分析
+
+```text
+Identify the top review-backed product problems, separate high-confidence findings from assumptions, and propose V1/V2 requirements with test cases.
+```
+
+### 低评分专项
+
+```text
+Focus only on low-rating and negative reviews. Find the blockers most likely to improve rating if fixed in the next release.
+```
+
+中文版本：
+
+```text
+重点关注低评、差评和负面反馈，找出下个版本最应该优先修复的问题，并生成 PRD 和测试用例。
+```
+
+### 订阅转化
+
+```text
+Focus on subscription conversion, paywall clarity, trial expectations, cancellation confusion, and pricing-related conflicts.
+```
+
+### 新手体验
+
+```text
+Focus on first-time user onboarding, beginner confusion, setup friction, and the first successful task completion.
+```
+
+### 某版本专项
+
+```text
+Focus on version 2.0 feedback, regressions, low-rating issues, and the highest-priority fixes for V1.
+```
+
+中文版本：
+
+```text
+重点分析版本 2.0 的用户反馈，关注回归问题、低评分原因和下一版最优先修复项。
+```
+
+### 测试用例专项
+
+```text
+Prioritize QA output. For each requirement, generate concrete test cases with preconditions, steps, expected results, and source review ids.
+```
+
+### 冲突反馈专项
+
+```text
+Find areas where positive and negative reviews disagree, explain the conflict, and propose validation steps before implementation.
+```
+
+### 版本计划专项
+
+```text
+Create a two-release plan. V1 should address urgent review-backed blockers, and V2 should improve broader experience and retention.
+```
